@@ -1,0 +1,4 @@
+.python-version
+yinc.py.egg-info
+dist
+__pycache__

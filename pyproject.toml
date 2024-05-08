@@ -1,0 +1,29 @@
+[project]
+name = "yinc.py"
+version = "0.2.0"
+authors = [{name="togashi", email="togashix@gmail.com"}]
+description = "YAML include"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = []
+
+dependencies = [
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+]
+
+[project.scripts]
+"yinc.py" = "scripts:main"
+
+[project.urls]
+"Homepage" = "https://github.com/togashi/yinc-py"
+"Bug Tracker" = "https://github.com/togashi/yinc-py/issues"
+
+[tool.setuptools.packages.find]
+exclude = [
+    "dist"
+]
