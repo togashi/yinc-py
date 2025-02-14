@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from pathlib import Path
 import json
 import os
 import re
@@ -9,7 +10,7 @@ import urllib
 import urllib.request
 import yaml
 
-VERSION = 'yinc.py version 0.2.0'
+VERSION = 'yinc.py version 0.3.0'
 
 
 class CDir:
@@ -98,18 +99,22 @@ class SourceStream:
                 continue
             m = pat.match(line)
             if m is not None:
-                first_indent = ''
                 new_indent = self.indent + m.group('indent')
-                if m.group('text') and m.group('tag') == args.include_tag:
-                    self.write_indent(m.group('indent'), m.group('text'))
-                    if m.group('text') != '-':
-                        self.write('\n')
-                    new_indent += ' ' * args.indent_width
-                    if m.group('text') == '-':
-                        first_indent = ' '
-                    pass
-                sub = self.sub_stream(m.group('spec'), new_indent, first_indent)
-                sub.process(args)
+                files = Path('.').glob(m.group('spec'))
+                for file in files:
+                    first_indent = ''
+                    indent = new_indent
+                    if m.group('text') and m.group('tag') == args.include_tag:
+                        self.write_indent(m.group('indent'), m.group('text'))
+                        if m.group('text') != '-':
+                            self.write('\n')
+                        indent += ' ' * args.indent_width
+                        if m.group('text') == '-':
+                            first_indent = ' '
+                        pass
+                    sub = self.sub_stream(str(file), indent, first_indent)
+                    sub.process(args)
+                pass
             else:
                 self.write_indent(line, '\n')
             pass
