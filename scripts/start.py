@@ -10,7 +10,7 @@ import urllib
 import urllib.request
 import yaml
 
-VERSION = 'yinc.py version 0.3.0'
+VERSION = 'yinc.py version 0.3.1'
 
 
 class CDir:
@@ -57,8 +57,8 @@ class SourceStream:
             with os.popen(cmd) as f:
                 lines = tuple(f.readlines())
             return lines
-        elif self.spec.startswith('$(json ') and self.spec.endswith(')'):
-            file = self.spec[7:-1]
+        elif (self.spec.startswith('$(json ') and self.spec.endswith(')')) or self.spec.endswith('.json'):
+            file = self.spec[7:-1] if self.spec.startswith('$(json ') else self.spec
             with open(file, 'r') as f:
                 lines = f.read()
             data = json.loads(lines)
@@ -89,6 +89,15 @@ class SourceStream:
         self.out += len(chunk)
         return
 
+    def expand_spec(self, spec):
+        if spec.startswith('$(shell ') and spec.endswith(')'):
+            return (spec,)
+        elif spec.startswith('$(json ') and spec.endswith(')'):
+            return (spec,)
+        elif spec.startswith('http://') or spec.startswith('https://'):
+            return (spec,)
+        return Path('.').glob(spec)
+
     def process(self, args):
         lines = self.get_content()
         escaped_tag = f"({args.include_tag}|{args.replace_tag})".replace('!', '\\!')
@@ -100,7 +109,7 @@ class SourceStream:
             m = pat.match(line)
             if m is not None:
                 new_indent = self.indent + m.group('indent')
-                files = Path('.').glob(m.group('spec'))
+                files = self.expand_spec(m.group('spec'))
                 for file in files:
                     first_indent = ''
                     indent = new_indent
